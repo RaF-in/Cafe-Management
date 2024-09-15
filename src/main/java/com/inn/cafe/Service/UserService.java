@@ -7,16 +7,11 @@ import com.inn.cafe.Repository.OneTimePasswordRepo;
 import com.inn.cafe.Repository.UserRepo;
 import com.inn.cafe.ReqestDTO.ForgotPasswordRequestDTO;
 import com.inn.cafe.ReqestDTO.VerifyOtpRequestDTO;
-import com.inn.cafe.ReqestDTO.loginRequestDTO;
 import com.inn.cafe.ResponseDTO.GenericResponse;
-import com.inn.cafe.ResponseDTO.loginResponseDTO;
 import com.inn.cafe.jwt.JwtHelper;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -33,12 +28,6 @@ public class UserService implements UserDetailsService {
     private UserRepo userRepo;
 
     @Autowired
-    private AuthenticationManager manager;
-    
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Autowired
     EmailNotificationService emailNotificationService;
 
     @Autowired
@@ -49,32 +38,8 @@ public class UserService implements UserDetailsService {
 
     public Claims claims;
 
-    public GenericResponse<String> signup(Map<String, String> request) {
-        User user = userRepo.findByEmail(request.get("email"));
-        if (user != null) {
-            return GenericResponse.badRequest("User Already exists");
-        } else {
-            return createNewUserForSignup(request);
-        }
-    }
-
-    public GenericResponse<String> createNewUserForSignup(Map<String, String> request) {
-        User user = createNewUser(request);
-        userRepo.save(user);
-        return GenericResponse.success("User created "+user);
-    }
-
-    private User createNewUser(Map<String, String> requestMap) {
-        User user = User.builder()
-                .username(requestMap.get("username"))
-                .email(requestMap.get("email"))
-                .contactNumber(requestMap.get("contactNumber"))
-                .roles(requestMap.get("roles"))
-                .status(requestMap.get("status"))
-                .password(passwordEncoder.encode(requestMap.get("password")))
-                .build();
-        return user;
-    }
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -94,14 +59,6 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public boolean doAuthenticate(String username, String password) {
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, password);
-        try {
-            return manager.authenticate(authentication).isAuthenticated();
-        } catch (BadCredentialsException e) {
-            throw new BadCredentialsException(" Invalid Email or Password  !!");
-        }
-    }
 
     public GenericResponse<List<String>> updateAllUsers(List<User> request) throws Exception {
         List<String> response = new ArrayList<>();
@@ -202,23 +159,5 @@ public class UserService implements UserDetailsService {
         user.setPassword(passwordEncoder.encode(forgotPasswordRequestDTO.getNewPassword()));
         userRepo.save(user);
         return GenericResponse.success("Password updated successfully");
-    }
-
-    public GenericResponse<loginResponseDTO> login(loginRequestDTO userReq) {
-        if (doAuthenticate(userReq.getEmail(), userReq.getPassword())) {
-            return userSuccessLogin(userReq);
-        } else {
-            return GenericResponse.error("Invalid Credentials");
-        }
-    }
-
-    public GenericResponse<loginResponseDTO> userSuccessLogin(loginRequestDTO userReq) {
-        String token = this.jwtHelper.generateToken(userReq.getEmail());
-        loginResponseDTO response = loginResponseDTO
-                .builder()
-                .jwtToken(token)
-                .username(userReq.getEmail())
-                .build();
-        return GenericResponse.success(response);
     }
 }

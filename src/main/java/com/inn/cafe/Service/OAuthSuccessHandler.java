@@ -14,18 +14,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@Service
+@Component
 public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
     @Autowired
     UserRepo userRepo;
     @Autowired
     UserService userService;
+
+    @Autowired
+    UserLoginAndSignupService userLoginAndSignupService;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -85,7 +88,8 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         requestBody.put("roles", "ROLE_USER");
 
 
-        return userService.signup(requestBody);
+        return userLoginAndSignupService.signup(requestBody);
+
 
     }
 
@@ -95,6 +99,6 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         userReq.setUsername(user.getUsername());
         userReq.setEmail(user.getEmail());
         userReq.setPassword("password");
-        return  userService.login(userReq);
+        return  userLoginAndSignupService.userSuccessLogin(userReq);
     }
 }

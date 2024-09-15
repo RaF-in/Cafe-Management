@@ -7,6 +7,7 @@ import com.inn.cafe.ReqestDTO.VerifyOtpRequestDTO;
 import com.inn.cafe.ReqestDTO.loginRequestDTO;
 import com.inn.cafe.ResponseDTO.GenericResponse;
 import com.inn.cafe.ResponseDTO.loginResponseDTO;
+import com.inn.cafe.Service.UserLoginAndSignupService;
 import com.inn.cafe.Service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +23,14 @@ import java.util.Map;
 public class UserController {
     @Autowired
     UserService userService;
+    @Autowired
+    UserLoginAndSignupService userLoginAndSignupService;
 
     @PostMapping("/signup")
     public GenericResponse<String> signup(@RequestBody(required = true) Map<String, String> request) {
         try {
             if (isValid(request)) {
-                return userService.signup(request);
+                return userLoginAndSignupService.signup(request);
             } else {
                 return GenericResponse.badRequest("Please provide all necessary fields for signup");
             }
@@ -45,7 +48,7 @@ public class UserController {
     public GenericResponse<loginResponseDTO> login(@RequestBody loginRequestDTO userReq) {
 
         try {
-            return userService.login(userReq);
+            return userLoginAndSignupService.login(userReq);
         } catch(Exception ex) {
             log.error(ex.getMessage(), ex);
             return GenericResponse.error(ex.getMessage());
