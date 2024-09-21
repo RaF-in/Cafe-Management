@@ -28,7 +28,7 @@ public class UserLoginAndSignupService {
 
     @Autowired
     private AuthenticationManager manager;
-    public GenericResponse<String> signup(Map<String, String> request) {
+    public GenericResponse<loginResponseDTO> signup(Map<String, String> request) {
         User user = userRepo.findByEmail(request.get("email"));
         if (user != null) {
             return GenericResponse.badRequest("User Already exists");
@@ -37,10 +37,14 @@ public class UserLoginAndSignupService {
         }
     }
 
-    public GenericResponse<String> createNewUserForSignup(Map<String, String> request) {
+    public GenericResponse<loginResponseDTO> createNewUserForSignup(Map<String, String> request) {
         User user = createNewUser(request);
         userRepo.save(user);
-        return GenericResponse.success("User created "+user);
+        loginRequestDTO userReq = new loginRequestDTO();
+        userReq.setUsername(user.getUsername());
+        userReq.setEmail(user.getEmail());
+        userReq.setPassword("password");
+        return userSuccessLogin(userReq, user);
     }
 
     private User createNewUser(Map<String, String> requestMap) {
@@ -57,18 +61,23 @@ public class UserLoginAndSignupService {
 
     public GenericResponse<loginResponseDTO> login(loginRequestDTO userReq) {
         if (doAuthenticate(userReq.getEmail(), userReq.getPassword())) {
-            return userSuccessLogin(userReq);
+            return userSuccessLogin(userReq, null);
         } else {
             return GenericResponse.error("Invalid Credentials");
         }
     }
 
-    public GenericResponse<loginResponseDTO> userSuccessLogin(loginRequestDTO userReq) {
+    public GenericResponse<loginResponseDTO> userSuccessLogin(loginRequestDTO userReq, User user) {
         String token = this.jwtHelper.generateToken(userReq.getEmail());
+        if (user == null) {
+            user = this.userRepo.findByEmail(userReq.getEmail());
+        }
         loginResponseDTO response = loginResponseDTO
                 .builder()
                 .jwtToken(token)
-                .username(userReq.getEmail())
+                .email(userReq.getEmail())
+                .expiresIn(this.jwtHelper.getExpirationDateFromToken(token))
+                .userData(user)
                 .build();
         return GenericResponse.success(response);
     }

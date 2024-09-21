@@ -52,7 +52,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
                 loginOrSignupSuccess(response, respObj);
             }
         } else {
-            GenericResponse<String> successResponseObj = redirectToSignUp(email, userName);
+            GenericResponse<loginResponseDTO> successResponseObj = redirectToSignUp(email, userName);
             if ("User Already exists".equals(successResponseObj.getMessage())) {
                 resp = false;
             } else {
@@ -78,7 +78,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
     }
 
 
-    public GenericResponse<String> redirectToSignUp(String email, String userName) {
+    public GenericResponse<loginResponseDTO> redirectToSignUp(String email, String userName) {
         // Create a request body (this is the body you want to send to the target URL)
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("email", email);
@@ -99,6 +99,6 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         userReq.setUsername(user.getUsername());
         userReq.setEmail(user.getEmail());
         userReq.setPassword("password");
-        return  userLoginAndSignupService.userSuccessLogin(userReq);
+        return  userLoginAndSignupService.userSuccessLogin(userReq, user);
     }
 }

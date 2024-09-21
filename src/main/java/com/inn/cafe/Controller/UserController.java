@@ -27,7 +27,7 @@ public class UserController {
     UserLoginAndSignupService userLoginAndSignupService;
 
     @PostMapping("/signup")
-    public GenericResponse<String> signup(@RequestBody(required = true) Map<String, String> request) {
+    public GenericResponse<loginResponseDTO> signup(@RequestBody(required = true) Map<String, String> request) {
         try {
             if (isValid(request)) {
                 return userLoginAndSignupService.signup(request);
