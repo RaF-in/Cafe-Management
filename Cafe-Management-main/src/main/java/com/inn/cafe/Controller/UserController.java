@@ -9,11 +9,16 @@ import com.inn.cafe.ResponseDTO.GenericResponse;
 import com.inn.cafe.ResponseDTO.loginResponseDTO;
 import com.inn.cafe.Service.UserLoginAndSignupService;
 import com.inn.cafe.Service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -100,6 +105,16 @@ public class UserController {
     public GenericResponse<String> changePassword(@RequestBody ForgotPasswordRequestDTO forgotPasswordRequestDTO) {
         try {
             return userService.changePassword(forgotPasswordRequestDTO);
+        } catch(Exception ex) {
+            log.error(ex.getMessage(), ex);
+            return GenericResponse.error(ex.getMessage());
+        }
+    }
+
+    @GetMapping("/getSocialLoginData")
+    public GenericResponse<loginResponseDTO> getSocialLoginData(Authentication authentication) {
+        try {
+            return  userLoginAndSignupService.handleSocialLogin((OAuth2User) authentication.getPrincipal());
         } catch(Exception ex) {
             log.error(ex.getMessage(), ex);
             return GenericResponse.error(ex.getMessage());

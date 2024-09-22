@@ -10,9 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -89,5 +92,44 @@ public class UserLoginAndSignupService {
         } catch (BadCredentialsException e) {
             throw new BadCredentialsException(" Invalid Email or Password  !!");
         }
+    }
+
+
+    public GenericResponse<loginResponseDTO> handleSocialLogin(OAuth2User user) {
+        String email = user.getAttribute("email").toString();
+        String userName = user.getName();
+        User userFromDb = userRepo.findByEmail(email);
+        GenericResponse<loginResponseDTO> successResponseObj;
+        if (userFromDb != null) {
+            successResponseObj = socialLogin(userFromDb);
+        } else {
+            successResponseObj = socialSignup(email, userName);
+        }
+        return successResponseObj;
+    }
+
+
+    public GenericResponse<loginResponseDTO> socialSignup(String email, String userName) {
+        // Create a request body (this is the body you want to send to the target URL)
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("email", email);
+        requestBody.put("username", userName);
+        requestBody.put("password", "password");
+        requestBody.put("contactNumber", "1111");
+        requestBody.put("roles", "ROLE_USER");
+
+
+        return signup(requestBody);
+
+
+    }
+
+    public GenericResponse<loginResponseDTO> socialLogin(User user) {
+        // Create a request body (this is the body you want to send to the target URL)
+        loginRequestDTO userReq = new loginRequestDTO();
+        userReq.setUsername(user.getUsername());
+        userReq.setEmail(user.getEmail());
+        userReq.setPassword("password");
+        return userSuccessLogin(userReq, user);
     }
 }

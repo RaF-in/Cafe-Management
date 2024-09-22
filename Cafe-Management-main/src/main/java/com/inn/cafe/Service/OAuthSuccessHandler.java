@@ -22,15 +22,6 @@ import java.util.Map;
 
 @Component
 public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
-    @Autowired
-    UserRepo userRepo;
-    @Autowired
-    UserService userService;
-
-    @Autowired
-    UserLoginAndSignupService userLoginAndSignupService;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
@@ -39,66 +30,6 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        DefaultOAuth2User user = (DefaultOAuth2User) authentication.getPrincipal();
-        String email = user.getAttribute("email").toString();
-        String userName = user.getName();
-        User userFromDb = userRepo.findByEmail(email);
-        boolean resp = true;
-        if (userFromDb != null) {
-            GenericResponse<loginResponseDTO>respObj = redirectToLogin(userFromDb);
-            if ("Invalid Credentials".equals(respObj.getMessage())) {
-                resp = false;
-            } else {
-                loginOrSignupSuccess(response, respObj);
-            }
-        } else {
-            GenericResponse<loginResponseDTO> successResponseObj = redirectToSignUp(email, userName);
-            if ("User Already exists".equals(successResponseObj.getMessage())) {
-                resp = false;
-            } else {
-                loginOrSignupSuccess(response, successResponseObj);
-            }
-        }
-
-        if (!resp) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to handle post request");
-        }
-    }
-
-    private <T> void loginOrSignupSuccess(HttpServletResponse response, GenericResponse<T> successResponseObj) throws IOException {
-        Map<String, GenericResponse<T>> successResponse = new HashMap<>();
-        successResponse.put("response", successResponseObj);
-        // Set response status and content type
-        response.setStatus(HttpServletResponse.SC_OK);  // HTTP 200 OK
-        response.setContentType("application/json");
-
-        // Write the JSON response body
-        response.getWriter().write(objectMapper.writeValueAsString(successResponse));
-        response.getWriter().flush();
-    }
-
-
-    public GenericResponse<loginResponseDTO> redirectToSignUp(String email, String userName) {
-        // Create a request body (this is the body you want to send to the target URL)
-        Map<String, String> requestBody = new HashMap<>();
-        requestBody.put("email", email);
-        requestBody.put("username", userName);
-        requestBody.put("password", "password");
-        requestBody.put("contactNumber", "1111");
-        requestBody.put("roles", "ROLE_USER");
-
-
-        return userLoginAndSignupService.signup(requestBody);
-
-
-    }
-
-    public GenericResponse<loginResponseDTO> redirectToLogin(User user) {
-        // Create a request body (this is the body you want to send to the target URL)
-        loginRequestDTO userReq = new loginRequestDTO();
-        userReq.setUsername(user.getUsername());
-        userReq.setEmail(user.getEmail());
-        userReq.setPassword("password");
-        return  userLoginAndSignupService.userSuccessLogin(userReq, user);
+        response.sendRedirect("http://localhost:4200/socialLoginHandle");
     }
 }

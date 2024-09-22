@@ -17,6 +17,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
 
 @Configuration
 @EnableWebSecurity
@@ -39,14 +43,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.csrf(csrf -> csrf.disable()).authorizeHttpRequests(registry -> {
+        http.csrf(csrf -> csrf.disable()).cors()  // Enable CORS support
+                .and().authorizeHttpRequests(registry -> {
             try {
                 registry.requestMatchers("/user").authenticated()
                 .requestMatchers("/user/signup").permitAll()
                 .requestMatchers("/user/login").permitAll()
+                .requestMatchers("/user/socialLogin").permitAll()
                 .requestMatchers("/user/forgotPassword").permitAll()
                 .requestMatchers("/user/verifyOtp").permitAll()
                 .requestMatchers("/user/changePassword").permitAll()
+                .requestMatchers("/oauth2/authorization/google").permitAll()
+                .requestMatchers("/user/getSocialLoginData").permitAll()
                 .anyRequest()
                 .authenticated()
                 .and().exceptionHandling(ex -> ex.authenticationEntryPoint(point))
@@ -73,5 +81,18 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception {
         return builder.getAuthenticationManager();
+    }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);  // Allow credentials such as cookies
+        config.addAllowedOrigin("http://localhost:4200");  // Allow Angular frontend
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 }

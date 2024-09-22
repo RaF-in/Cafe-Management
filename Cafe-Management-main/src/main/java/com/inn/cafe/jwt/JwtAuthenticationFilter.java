@@ -1,7 +1,7 @@
 package com.inn.cafe.jwt;
 
 import com.inn.cafe.DTO.UserWrapDTO;
-import com.inn.cafe.Service.UserService;
+import com.inn.cafe.Repository.UserRepo;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
@@ -28,7 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private JwtHelper jwtHelper;
 
     @Autowired
-    private UserService userService;
+    UserRepo userRepo;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -60,9 +60,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         //
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             //fetch user detail from username
-            UserWrapDTO user = (UserWrapDTO) this.userService.loadUserByUsername(email);
+            UserWrapDTO user = new UserWrapDTO(userRepo.findByEmail(email));
             Boolean validateToken = this.jwtHelper.validateToken(token, user);
-            this.userService.setClaims(this.jwtHelper.getAllClaimsFromToken(token));
             if (validateToken) {
                 //set the authentication
                 this.jwtHelper.setCurrentUser(user);

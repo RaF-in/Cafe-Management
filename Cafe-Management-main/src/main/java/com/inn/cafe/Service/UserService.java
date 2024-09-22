@@ -7,7 +7,9 @@ import com.inn.cafe.Repository.OneTimePasswordRepo;
 import com.inn.cafe.Repository.UserRepo;
 import com.inn.cafe.ReqestDTO.ForgotPasswordRequestDTO;
 import com.inn.cafe.ReqestDTO.VerifyOtpRequestDTO;
+import com.inn.cafe.ReqestDTO.loginRequestDTO;
 import com.inn.cafe.ResponseDTO.GenericResponse;
+import com.inn.cafe.ResponseDTO.loginResponseDTO;
 import com.inn.cafe.jwt.JwtHelper;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.BeanUtils;
@@ -16,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
