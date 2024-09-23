@@ -110,14 +110,4 @@ public class UserController {
             return GenericResponse.error(ex.getMessage());
         }
     }
-
-    @GetMapping("/getSocialLoginData")
-    public GenericResponse<loginResponseDTO> getSocialLoginData(Authentication authentication) {
-        try {
-            return  userLoginAndSignupService.handleSocialLogin((OAuth2User) authentication.getPrincipal());
-        } catch(Exception ex) {
-            log.error(ex.getMessage(), ex);
-            return GenericResponse.error(ex.getMessage());
-        }
-    }
 }
