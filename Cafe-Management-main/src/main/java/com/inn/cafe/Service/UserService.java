@@ -14,6 +14,7 @@ import com.inn.cafe.jwt.JwtHelper;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -53,13 +54,10 @@ public class UserService implements UserDetailsService {
         return new UserWrapDTO(user);
     }
 
+
     public GenericResponse<List<User>> getAllUsers() {
-        if (this.jwtHelper.isAdmin()) {
-            List<User> userList = userRepo.findByRoles("ROLE_USER");
-            return GenericResponse.success(userList);
-        } else {
-            return GenericResponse.unauthorized("Unauthorized access");
-        }
+        List<User> userList = userRepo.findByRoles("ROLE_USER");
+        return GenericResponse.success(userList);
     }
 
 
