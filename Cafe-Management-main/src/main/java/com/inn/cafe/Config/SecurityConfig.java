@@ -46,16 +46,12 @@ public class SecurityConfig {
     // authorization
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http
-                .cors() // Enable CORS support
-                .and()
-                .csrf().disable();
+        http.cors(AbstractHttpConfigurer::disable);
+        http.csrf(AbstractHttpConfigurer::disable);
         http.authorizeHttpRequests(registry -> {
             try {
                 registry.requestMatchers("/user").authenticated()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/user/signup").permitAll()
+                .requestMatchers("/user/signup").permitAll()
                 .requestMatchers("/user/login").permitAll()
                 .requestMatchers("/user/socialLogin").permitAll()
                 .requestMatchers("/user/forgotPassword").permitAll()
@@ -93,22 +89,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:4200");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*"); // Allow all methods
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
-    @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("http://localhost:4200");
+                registry.addMapping("/**").allowedOrigins("http://localhost:4200")
+                        .allowedMethods("*");
             }
         };
     }

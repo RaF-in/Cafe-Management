@@ -24,7 +24,6 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*", allowCredentials = "true")
 @RequestMapping("/user")
 public class UserController {
     @Autowired
